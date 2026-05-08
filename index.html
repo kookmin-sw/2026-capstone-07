@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QUBO 기반 CNN 채널 프루닝 졸업작품</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+      line-height: 1.6;
+      color: #1f2937;
+      background: #f8fafc;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .container {
+      width: min(1120px, 92%);
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .nav {
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #111827;
+    }
+
+    .logo span {
+      color: #2563eb;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      font-size: 0.95rem;
+      color: #4b5563;
+    }
+
+    .nav-links a:hover {
+      color: #2563eb;
+    }
+
+    .hero {
+      padding: 92px 0 72px;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 34%),
+        linear-gradient(135deg, #ffffff 0%, #eef4ff 100%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1d4ed8;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 4.2rem);
+      line-height: 1.15;
+      letter-spacing: -0.04em;
+      color: #0f172a;
+      margin-bottom: 22px;
+    }
+
+    .hero h1 strong {
+      color: #2563eb;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #475569;
+      max-width: 680px;
+      margin-bottom: 30px;
+    }
+
+    .button-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .button.primary {
+      color: white;
+      background: #2563eb;
+      box-shadow: 0 14px 24px rgba(37, 99, 235, 0.24);
+    }
+
+    .button.primary:hover {
+      transform: translateY(-2px);
+      background: #1d4ed8;
+    }
+
+    .button.secondary {
+      color: #1e293b;
+      background: white;
+      border: 1px solid #dbe3ef;
+    }
+
+    .button.secondary:hover {
+      transform: translateY(-2px);
+      border-color: #2563eb;
+      color: #2563eb;
+    }
+
+    .hero-card {
+      background: #0f172a;
+      color: white;
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 26px 70px rgba(15, 23, 42, 0.24);
+    }
+
+    .hero-card h2 {
+      font-size: 1.35rem;
+      margin-bottom: 22px;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 14px;
+    }
+
+    .pipeline-step {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .step-number {
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      background: #2563eb;
+      font-weight: 800;
+    }
+
+    .pipeline-step strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 0.98rem;
+    }
+
+    .pipeline-step span {
+      color: #cbd5e1;
+      font-size: 0.9rem;
+    }
+
+    section {
+      padding: 78px 0;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 46px;
+    }
+
+    .section-title h2 {
+      font-size: clamp(1.8rem, 4vw, 2.7rem);
+      color: #0f172a;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+
+    .section-title p {
+      color: #64748b;
+      font-size: 1.04rem;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 22px;
+    }
+
+    .card {
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+      transition: 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 34px rgba(15, 23, 42, 0.09);
+    }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 16px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 1.45rem;
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      font-size: 1.2rem;
+      color: #111827;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: #64748b;
+      font-size: 0.97rem;
+    }
+
+    .method {
+      background: white;
+    }
+
+    .method-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 34px;
+      align-items: center;
+    }
+
+    .method-box {
+      background: #f8fafc;
+      border: 1px solid #e5e7eb;
+      border-radius: 26px;
+      padding: 30px;
+    }
+
+    .method-box h3 {
+      color: #0f172a;
+      font-size: 1.45rem;
+      margin-bottom: 16px;
+    }
+
+    .formula {
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 20px;
+      padding: 24px;
+      margin: 22px 0;
+      overflow-x: auto;
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 1rem;
+    }
+
+    .method-list {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+
+    .method-list li {
+      padding-left: 28px;
+      position: relative;
+      color: #475569;
+    }
+
+    .method-list li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #2563eb;
+      font-weight: 900;
+    }
+
+    .flow {
+      display: grid;
+      gap: 18px;
+    }
+
+    .flow-item {
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 16px;
+      align-items: start;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .flow-num {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      background: #2563eb;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 900;
+    }
+
+    .flow-item h4 {
+      color: #111827;
+      margin-bottom: 5px;
+      font-size: 1.08rem;
+    }
+
+    .flow-item p {
+      color: #64748b;
+      font-size: 0.96rem;
+    }
+
+    .comparison {
+      background: #f1f5f9;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th, td {
+      padding: 18px 20px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #0f172a;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    td {
+      color: #475569;
+      font-size: 0.96rem;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .highlight {
+      color: #2563eb;
+      font-weight: 800;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .metric {
+      text-align: center;
+      background: white;
+      border: 1px solid #e5e7eb;
+      border-radius: 24px;
+      padding: 28px 20px;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 2rem;
+      color: #2563eb;
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .footer {
+      padding: 42px 0;
+      background: #0f172a;
+      color: #cbd5e1;
+      text-align: center;
+    }
+
+    .footer strong {
+      color: white;
+    }
+
+    @media (max-width: 900px) {
+      .hero-grid,
+      .method-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cards,
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .nav-links {
+        display: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .cards,
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 62px;
+      }
+
+      .button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a href="#" class="logo">QUBO <span>Pruning</span></a>
+      <nav class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#method">Method</a>
+        <a href="#experiment">Experiment</a>
+        <a href="#result">Expected Result</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="badge">Graduation Capstone Project</div>
+          <h1>
+            QUBO 기반<br />
+            <strong>CNN 채널 프루닝</strong>
+          </h1>
+          <p>
+            본 프로젝트는 CNN 모델의 채널 선택 문제를 조합 최적화 문제로 바라보고,
+            QUBO(Quadratic Unconstrained Binary Optimization) 형태로 구성한 뒤
+            Simulated Annealing 기반 탐색을 통해 효율적인 채널 프루닝 방법을 연구합니다.
+          </p>
+          <div class="button-group">
+            <a href="#method" class="button primary">방법론 보기</a>
+            <a href="#experiment" class="button secondary">실험 설계 보기</a>
+          </div>
+        </div>
+
+        <aside class="hero-card">
+          <h2>Project Pipeline</h2>
+          <div class="pipeline">
+            <div class="pipeline-step">
+              <div class="step-number">1</div>
+              <div>
+                <strong>Pretrained CNN Backbone</strong>
+                <span>학습된 CNN 모델을 기반으로 프루닝 대상 레이어를 선정</span>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-number">2</div>
+              <div>
+                <strong>Feature Map Extraction</strong>
+                <span>Validation 데이터를 통과시켜 채널별 feature map을 추출</span>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-number">3</div>
+              <div>
+                <strong>QUBO Matrix Construction</strong>
+                <span>중요도와 상관관계를 이용해 QUBO 행렬 구성</span>
+              </div>
+            </div>
+            <div class="pipeline-step">
+              <div class="step-number">4</div>
+              <div>
+                <strong>SA-based Channel Selection</strong>
+                <span>Simulated Annealing으로 유지할 채널 조합 탐색</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="overview">
+      <div class="container">
+        <div class="section-title">
+          <h2>Project Overview</h2>
+          <p>
+            딥러닝 모델은 높은 성능을 보이지만, 많은 채널과 파라미터로 인해 연산량과 추론 시간이 증가합니다.
+            본 프로젝트는 정확도를 최대한 유지하면서 모델을 경량화하는 채널 프루닝 방법을 제안합니다.
+          </p>
+        </div>
+
+        <div class="cards">
+          <article class="card">
+            <div class="icon">🎯</div>
+            <h3>목표</h3>
+            <p>
+              CNN의 불필요한 채널을 제거하여 모델 크기와 연산량을 줄이고,
+              정확도 하락을 최소화하는 프루닝 전략을 설계합니다.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">🧩</div>
+            <h3>핵심 아이디어</h3>
+            <p>
+              채널을 단순히 하나씩 제거하는 것이 아니라,
+              여러 채널의 조합을 고려하는 QUBO 최적화 문제로 변환합니다.
+            </p>
+          </article>
+
+          <article class="card">
+            <div class="icon">⚡</div>
+            <h3>기대 효과</h3>
+            <p>
+              정확도, latency, 모델 크기, 연산량을 함께 비교하여
+              실제 적용 가능성을 고려한 경량화 결과를 분석합니다.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="method" class="method">
+      <div class="container">
+        <div class="section-title">
+          <h2>Proposed Method</h2>
+          <p>
+            프루닝 대상 채널마다 binary variable을 부여하고,
+            채널 중요도와 채널 간 중복성을 함께 고려하여 QUBO 목적함수를 구성합니다.
+          </p>
+        </div>
+
+        <div class="method-grid">
+          <div class="method-box">
+            <h3>QUBO Formulation</h3>
+            <p>
+              각 채널을 선택할지 제거할지를 이진 변수로 표현합니다.
+              예를 들어 xᵢ = 1이면 i번째 채널을 유지하고,
+              xᵢ = 0이면 제거합니다.
+            </p>
+            <div class="formula">
+              minimize&nbsp;&nbsp; xᵀQx<br />
+              subject to&nbsp;&nbsp; xᵢ ∈ {0, 1}
+            </div>
+            <ul class="method-list">
+              <li>Q의 대각 원소는 채널별 중요도를 반영합니다.</li>
+              <li>Q의 비대각 원소는 채널 간 상관관계 또는 중복성을 반영합니다.</li>
+              <li>선택할 채널 수는 penalty term을 통해 제어합니다.</li>
+            </ul>
+          </div>
+
+          <div class="flow">
+            <div class="flow-item">
+              <div class="flow-num">01</div>
+              <div>
+                <h4>CNN 학습 및 Backbone 준비</h4>
+                <p>기준 모델을 먼저 학습하거나 pretrained model을 사용하여 baseline 성능을 측정합니다.</p>
+              </div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-num">02</div>
+              <div>
+                <h4>Validation Forward</h4>
+                <p>Validation 데이터를 모델에 입력하여 각 convolution layer의 feature map을 수집합니다.</p>
+              </div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-num">03</div>
+              <div>
+                <h4>Importance & Correlation 계산</h4>
+                <p>weight magnitude 기반 중요도와 feature map cosine similarity 기반 상관관계를 계산합니다.</p>
+              </div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-num">04</div>
+              <div>
+                <h4>QUBO Solver 적용</h4>
+                <p>Simulated Annealing을 사용하여 유지할 채널 조합을 탐색합니다.</p>
+              </div>
+            </div>
+            <div class="flow-item">
+              <div class="flow-num">05</div>
+              <div>
+                <h4>모델 재구성 및 Fine-tuning</h4>
+                <p>선택된 채널만 남긴 모델을 재구성하고 fine-tuning을 통해 성능을 회복합니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experiment" class="comparison">
+      <div class="container">
+        <div class="section-title">
+          <h2>Experiment Design</h2>
+          <p>
+            제안 방법의 효과를 확인하기 위해 baseline CNN, 일반적인 pruning 방식,
+            QUBO 기반 pruning 방식을 비교합니다.
+          </p>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>설명</th>
+                <th>비교 목적</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="highlight">Baseline CNN</span></td>
+                <td>프루닝을 적용하지 않은 원본 CNN 모델</td>
+                <td>정확도와 latency의 기준 성능 측정</td>
+              </tr>
+              <tr>
+                <td><span class="highlight">Classical Pruning</span></td>
+                <td>weight magnitude 등 기존 기준에 따라 채널을 제거하는 방식</td>
+                <td>기존 경량화 방식과의 성능 차이 분석</td>
+              </tr>
+              <tr>
+                <td><span class="highlight">QUBO-based Pruning</span></td>
+                <td>채널 중요도와 상관관계를 QUBO 행렬로 구성하여 채널 조합을 선택</td>
+                <td>조합 최적화 기반 접근의 장점 검증</td>
+              </tr>
+              <tr>
+                <td><span class="highlight">Fine-tuned Model</span></td>
+                <td>프루닝 이후 재학습을 통해 성능을 회복한 모델</td>
+                <td>실제 사용 가능한 최종 모델 성능 확인</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="result">
+      <div class="container">
+        <div class="section-title">
+          <h2>Expected Result</h2>
+          <p>
+            본 프로젝트는 단순히 모델을 작게 만드는 것이 아니라,
+            정확도와 효율성 사이의 균형을 정량적으로 분석하는 것을 목표로 합니다.
+          </p>
+        </div>
+
+        <div class="metrics-grid">
+          <div class="metric">
+            <strong>Accuracy</strong>
+            <span>정확도 하락 최소화</span>
+          </div>
+          <div class="metric">
+            <strong>Latency</strong>
+            <span>추론 시간 감소</span>
+          </div>
+          <div class="metric">
+            <strong>Params</strong>
+            <span>파라미터 수 감소</span>
+          </div>
+          <div class="metric">
+            <strong>FLOPs</strong>
+            <span>연산량 감소</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-title">
+          <h2>Why QUBO?</h2>
+          <p>
+            일반적인 pruning은 채널을 개별적으로 평가하는 경우가 많습니다.
+            하지만 실제 CNN에서는 채널들이 서로 독립적이지 않고, 어떤 채널 조합을 남기느냐에 따라 성능이 달라질 수 있습니다.
+            QUBO는 이러한 채널 간 관계를 행렬 형태로 표현할 수 있기 때문에,
+            채널 선택 문제를 조합 최적화 관점에서 다룰 수 있습니다.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <p><strong>QUBO-based CNN Channel Pruning</strong></p>
+      <p>Capstone Design Project · Department of Software</p>
+    </div>
+  </footer>
+</body>
+</html>
