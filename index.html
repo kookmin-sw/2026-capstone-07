@@ -369,6 +369,54 @@
       background: #f1f5f9;
     }
 
+    .video-card {
+  margin-top: 42px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+}
+
+.video-card h3 {
+  margin-bottom: 18px;
+  color: #0f172a;
+  font-size: 1.35rem;
+}
+
+.video-compare-title {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.video-label {
+  text-align: center;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.video-label.original {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.video-label.pruned {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+}
+
+.demo-video {
+  width: 100%;
+  border-radius: 18px;
+  display: block;
+}
+
     .table-wrap {
       overflow-x: auto;
       background: white;
@@ -703,40 +751,32 @@
             </tbody>
           </table>
         </div>
-        <div style="margin-top: 42px;">
-          <div style="
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 24px;
-            padding: 24px;
-            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
-          ">
-            <h3 style="
-              margin-bottom: 18px;
-              color: #0f172a;
-              font-size: 1.35rem;
-            ">
-              YOLO Detection Demo
-            </h3>
-       
-        
-            <video
-              controls
-              autoplay
-              muted
-              loop
-              playsinline
-              style="
-                width: 100%;
-                border-radius: 18px;
-                display: block;
-              "
-            >
-              <source src="video/yolo.mp4" type="video/mp4">
-              브라우저가 video 태그를 지원하지 않습니다.
-            </video>
-          </div>
-        </div>
+        <div class="video-card">
+  <h3>YOLO Detection Demo</h3>
+
+  <div class="video-compare-title">
+    <div class="video-label original">
+      ORIGINAL MODEL
+    </div>
+
+    <div class="video-label pruned">
+      QUBO-PRUNED MODEL
+    </div>
+  </div>
+
+  <video
+    class="demo-video"
+    controls
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+  >
+    <source src="video/yolo.mp4" type="video/mp4">
+    브라우저가 video 태그를 지원하지 않습니다.
+  </video>
+</div>
       </div>
     </section>
 
