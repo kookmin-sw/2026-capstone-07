@@ -303,6 +303,61 @@
       font-size: 1rem;
     }
 
+    /* Video Compare Labels */
+    .video-compare-title {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+    
+    .video-label {
+      padding: 16px 20px;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+      transition: 0.2s ease;
+    }
+    
+    .video-label.pruned {
+      border-color: #bfdbfe;
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    }
+    
+    .label-tag {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    
+    .video-label.pruned .label-tag {
+      color: #2563eb;
+    }
+    
+    .label-desc {
+      font-size: 0.88rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    
+    .label-desc strong {
+      color: #0f172a;
+      font-weight: 700;
+    }
+    
+    .video-label.pruned .label-desc strong {
+      color: #1d4ed8;
+    }
+    
+    @media (max-width: 640px) {
+      .video-compare-title {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .method-list {
       list-style: none;
       display: grid;
@@ -718,10 +773,16 @@
             </h3>
             <div class="video-compare-title">
               <div class="video-label original">
-                ORIGINAL MODEL
+                <div class="label-tag">ORIGINAL MODEL</div>
+                <div class="label-desc">
+                  원본 YOLOv8m 모델 · <strong>25.90M</strong> params · <strong>79.32</strong> GFLOPs
+                </div>
               </div>
               <div class="video-label pruned">
-                QUBO-PRUNED MODEL
+                <div class="label-tag">QUBO-PRUNED MODEL</div>
+                <div class="label-desc">
+                  90% 채널 프루닝 · <strong>1.68M</strong> params · <strong>9.47</strong> GFLOPs · <strong>4.08×</strong> faster
+                </div>
               </div>
             </div>
         
